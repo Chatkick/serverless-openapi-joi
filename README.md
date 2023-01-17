@@ -47,27 +47,27 @@ functions:
   api:
     handler: index.handler
     events:
-      - http:
+      - httpApi:
           path: swagger.json
           method: get
           private: true
-      - http:
+      - httpApi:
           path: pets
           method: get
           private: true
-      - http:
+      - httpApi:
           path: pets/{id}
           method: get
           private: true
-      - http:
+      - httpApi:
           path: pets
           method: post
           private: true
-      - http:
+      - httpApi:
           path: pets/{id}
           method: patch
           private: true
-      - http:
+      - httpApi:
           path: pets/{id}
           method: delete
           private: true
