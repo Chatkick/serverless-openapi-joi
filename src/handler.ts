@@ -1,16 +1,22 @@
 import _ from 'lodash';
 import Boom from '@hapi/boom';
 import Joi, { SchemaLike } from '@hapi/joi';
-import { APIGatewayEventRequestContextV2, APIGatewayProxyEventV2, Context } from 'aws-lambda';
+import {
+  APIGatewayEventRequestContextV2,
+  APIGatewayProxyEventV2,
+  APIGatewayProxyEventV2WithLambdaAuthorizer,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import OpenAPIBuilder, { OpenAPITag, OpenAPISecurityRequirement, OpenAPIBuilderOpts } from './openapi';
 
 export interface HandlerEvent extends APIGatewayProxyEventV2 {
   payload: any;
 }
 
-export interface HandlerResponse {
-  statusCode?: number;
-  body?: string | Buffer;
+export interface HandlerResponse extends APIGatewayProxyResult {
+  statusCode: number;
+  body: string;
   headers?: {
     [header: string]: string;
   };
@@ -37,7 +43,7 @@ export interface Route {
   };
   security?: OpenAPISecurityRequirement[];
   handler: (
-    event?: Partial<HandlerEvent | APIGatewayProxyEventV2>,
+    event?: Partial<HandlerEvent> | APIGatewayProxyEventV2 | APIGatewayProxyEventV2WithLambdaAuthorizer<any>,
     context?: Context | APIGatewayEventRequestContextV2,
   ) => Promise<HandlerResponse>;
 }

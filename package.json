@@ -1,8 +1,8 @@
 {
-  "name": "serverless-openapi-joi",
+  "name": "@chatkick/serverless-openapi-joi",
   "description": "Serverless plugin for creating OpenAPI specifications with Joi validation",
   "author": "Chatkick",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "license": "MIT",
   "homepage": "https://github.com/Chatkick/serverless-openapi-joi",
   "bugs": {

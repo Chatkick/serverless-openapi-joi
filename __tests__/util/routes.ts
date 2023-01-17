@@ -31,7 +31,7 @@ const validation = {
     .label('QueryOffset'),
 };
 
-export const dummyHandler = jest.fn(async () => ({ statusCode: 200 }));
+export const dummyHandler = jest.fn(async () => ({ statusCode: 200, body: '' }));
 
 export const routes: Route[] = [
   {
