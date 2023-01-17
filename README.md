@@ -9,7 +9,9 @@ Serverless plugin for creating [OpenAPI v3](https://github.com/OAI/OpenAPI-Speci
 This plugin allows you to define input validation for your serverless API endpoints and generates OpenAPI definitions
 from validation rules, which can be either saved somewhere or served directly as an endpoint in the API itself.
 
-See full example project boilerplate here: [anttiviljami/serverless-openapi-joi-boilerplate](https://github.com/anttiviljami/serverless-openapi-joi-boilerplate)
+This is an updated fork from [an old version](https://github.com/anttiviljami/serverless-openapi-joi). 
+
+**Please note this will only work for HTTP v2 - `httpApi` type functions in serverless**
 
 ## Philosophy
 
@@ -32,7 +34,7 @@ Inspired by [hapi-swagger](https://github.com/glennjones/hapi-swagger)
 Install the plugin:
 
 ```
-npm install --save serverless-openapi-joi
+npm install --save @chatkick/serverless-openapi-joi
 ```
 
 In serverless.yml, add the plugin and define your api endpoints:
