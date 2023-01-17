@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import Joi from '@hapi/joi';
-import joi2json from 'joi-to-json-schema';
+import * as Joi2Json from 'joi-to-json';
+import parse from 'joi-to-json';
+//import joi2json from 'joi-to-json-schema';
 import { Route } from './handler';
 
 export interface OpenAPIInfo {
@@ -210,7 +212,7 @@ export default class OpenAPIBuilder {
         _.mapValues(validation.headers, (joi: Joi.SchemaLike, name: string) => {
           const ref = this.createSchema(this.nameToRef(name, `${operationId}Header`), joi, this.schemas);
           const joiDescription = _.get(joi, '_description') || `Request header: ${name}`;
-          const joiRequired = _.get(joi, '_flags.presence', 'optional') === 'required';
+          const joiRequired = _.get(joi, '_flags.presence', 'required') === 'required';
           parameters.push({
             name,
             in: 'header',
@@ -243,7 +245,7 @@ export default class OpenAPIBuilder {
         _.mapValues(validation.queryStringParameters, (joi: Joi.SchemaLike, name: string) => {
           const ref = this.createSchema(this.nameToRef(name, `${operationId}Query`), joi, this.schemas);
           const joiDescription = _.get(joi, '_description') || `Query parameter: ${name}`;
-          const joiRequired = _.get(joi, '_flags.presence', 'optional') === 'required';
+          const joiRequired = _.get(joi, '_flags.presence', 'required') === 'required';
           parameters.push({
             name,
             in: 'query',
@@ -289,13 +291,22 @@ export default class OpenAPIBuilder {
     };
   }
 
+  private logicalOpParser: Joi2Json.LogicalOpParserOpts = {
+    with: (schema) => _.omit(schema, ['patterns', 'examples']),
+  };
   // converts a joi schema to OpenAPI compatible JSON schema definition
   private joiToOpenApiSchema(joi: Joi.SchemaLike) {
-    return joi2json(joi, (schema) => _.omit(schema, ['patterns', 'examples']));
+    //debugger;
+    return parse(joi, 'open-api', {}, { logicalOpParser: this.logicalOpParser }); // Partially override Logical Relation Operator
+
+    //return joi2json(joi, (schema) => _.omit(schema, ['patterns', 'examples']));
   }
 
   // takes a joi schema, puts
   private createSchema(name: string, joi: Joi.SchemaLike, schemas?: any[]) {
+    if (!Joi.isSchema(joi)) {
+      debugger;
+    }
     const def = this.joiToOpenApiSchema(joi);
     const ref = def.title || name;
     const schema = { ref, ...def };

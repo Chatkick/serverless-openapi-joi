@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import Boom from '@hapi/boom';
 import Joi, { SchemaLike } from '@hapi/joi';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { APIGatewayEventRequestContextV2, APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import OpenAPIBuilder, { OpenAPITag, OpenAPISecurityRequirement, OpenAPIBuilderOpts } from './openapi';
 
-export interface HandlerEvent extends APIGatewayProxyEvent {
+export interface HandlerEvent extends APIGatewayProxyEventV2 {
   payload: any;
 }
 
@@ -36,7 +36,10 @@ export interface Route {
     };
   };
   security?: OpenAPISecurityRequirement[];
-  handler: (event?: Partial<HandlerEvent>, context?: Context) => Promise<HandlerResponse>;
+  handler: (
+    event?: Partial<HandlerEvent | APIGatewayProxyEventV2>,
+    context?: Context | APIGatewayEventRequestContextV2,
+  ) => Promise<HandlerResponse>;
 }
 
 export interface HandlerConstructorOpts extends OpenAPIBuilderOpts {
@@ -64,8 +67,11 @@ export default class OpenAPIHandler {
   }
 
   // lambda handler method
-  public async handler(event: Partial<APIGatewayProxyEvent>, context?: Context): Promise<HandlerResponse> {
-    const { path } = event;
+  public async handler(
+    event: Partial<APIGatewayProxyEventV2>,
+    context?: APIGatewayEventRequestContextV2,
+  ): Promise<HandlerResponse> {
+    const { rawPath: path } = event;
 
     // special endpoint to serve swagger.json
     if (this.swaggerEndpoint && path.match(new RegExp(`^${this.swaggerEndpoint}$`))) {
@@ -83,8 +89,12 @@ export default class OpenAPIHandler {
   }
 
   // dank version of hapi's routing + joi validation
-  private async route(event: Partial<APIGatewayProxyEvent>, context?: Context): Promise<HandlerResponse> {
-    const { httpMethod, path, pathParameters, queryStringParameters, body, headers } = event;
+  private async route(
+    event: Partial<APIGatewayProxyEventV2>,
+    context?: APIGatewayEventRequestContextV2,
+  ): Promise<HandlerResponse> {
+    const { rawPath: path, pathParameters, queryStringParameters, body, headers } = event;
+    const { method: httpMethod } = context.http;
 
     // sort routes by "specificity" i.e. just use path length 🙈
     // @TODO: maybe count slashes in path instead ?
@@ -129,11 +139,11 @@ export default class OpenAPIHandler {
         queryStringParameters: Joi.object().unknown(),
       };
 
-      const validationResult = Joi.validate(input, {
+      const validationResult = Joi.object({
         ...validationDefaults,
         ...validation,
-        headers: Joi.object(headers || {}).unknown(), // headers are always partially defined
-      });
+        headers: Joi.object(headers || {}).unknown(),
+      }).validate(input, {});
 
       // throw a 400 error if there are any validation errors
       if (validationResult.error) {
